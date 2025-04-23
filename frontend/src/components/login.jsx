@@ -11,34 +11,45 @@ const Login = () => {
   const { resData, errormsg } = response;
   const navigate = useNavigate();
 
-  const EventEmail = (e) => {
+  const handleEmailChange = (e) => {
     setEmail(e.target.value);
-
+    setErrorMsg("");
+    setSuccessMsg("");
   };
 
-  const EventPassword = (e) => {
+  const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    
+    setErrorMsg("");
+    setSuccessMsg("");
   };
 
-  const LoginFormSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (email && password) {
-      const payload = { email, password };
-      const url = `http://localhost:3003/login`;
-      postData(url, payload);
-      setEmail("");
-      setPassword("");
-    } else {
+    if (!email || !password) {
       setErrorMsg("Please fill in all fields");
+      return;
     }
+
+    const payload = { email, password };
+    const url = `http://localhost:3003/login`;
+    postData(url, payload);
+    setEmail("");
+    setPassword("");
   };
 
   useEffect(() => {
     if (resData?.data?.status === "success") {
       setSuccessMsg(resData.data.message || "Login successful!");
       setErrorMsg("");
+
+      if (resData.data.token) {
+        localStorage.setItem("authToken", resData.data.token);
+      }
+
+      setTimeout(() => {
+        navigate("/home");
+      }, 1500);
     } else if (resData?.data?.status === "error") {
       setErrorMsg(resData.data.message || "Login failed");
       setSuccessMsg("");
@@ -52,23 +63,25 @@ const Login = () => {
     <>
       <h2>Login</h2>
       <form
+        onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        onSubmit={LoginFormSubmit}
       >
         <label>Email</label>
         <input
-          type="text"
+          type="email"
           placeholder="Enter email"
           value={email}
-          onChange={EventEmail}
+          onChange={handleEmailChange}
         />
+
         <label>Password</label>
         <input
           type="password"
           placeholder="Enter password"
           value={password}
-          onChange={EventPassword}
+          onChange={handlePasswordChange}
         />
+
         <a href="/">Create Account</a>
         <button type="submit">Login</button>
 
